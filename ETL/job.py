@@ -1,38 +1,62 @@
-import random
-import string
-from datetime import datetime, timedelta
+from pprint import pprint
+def flatten_dict(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 from pymongo import MongoClient
-from bson.objectid import ObjectId
-from assets import *
 
 # Connect to MongoDB
-client = MongoClient('mongodb://localhost:27017/')
-db = client['source']
-collection = db['jobs']
+source_client = MongoClient("mongodb://localhost:27017/")
+target_client = MongoClient("mongodb://localhost:27017/")
 
-# Generate 100 documents based on the schema
-documents = []
-for _ in range(100):
-    my_Date=datetime(2022, 1, 1) + timedelta(days=random.randint(0, (datetime.now() - datetime(2022, 1, 1)).days))
-    document = {
-        'companyId': random_company_id(),
-        'postedBy': random_company_name(),
-        'title': random_title(),
-        'description': random_string(100),
-        'requirements': random_skills(),
-        'location': randon_state(),
-        'salary': random_salary(),
-        'department': random_dept(),
-        'type': random.choice(['Full-time', 'Part-time', 'Contract']),
-        'status': random.choice(['Active', 'Closed']),
-        'applicationsCount': random.randint(0, 100),
-        'jobLink': random_url(),
-        'createdAt': my_Date,
-        'updatedAt': my_Date + timedelta(days=random.randint(0, (datetime.now() - my_Date).days))
-    }
-    documents.append(document)
+# Source and target database and collection details
+source_db = source_client["source"]
+source_collection = source_db["jobs"]
 
-# Insert documents into the collection
-collection.insert_many(documents)
+target_db = target_client["target"]
+target_collection = target_db["jobs"]
 
-print("Inserted 100 documents into the jobs collection.")
+# Fetch documents using the cursor
+cursor = source_collection.find()
+
+# Flatten each document in the cursor
+flattened_docs = [flatten_dict(doc) for doc in cursor]
+
+def transform_document(flat_doc):
+    # Example transformation: Add a new field and modify an existing field
+    requirements = [requirement.lower() for requirement in flat_doc.get('requirements', [])]
+    flat_doc["Python"] = 1 if 'python' in requirements else 0
+    flat_doc["Java"] = 1 if 'java' in requirements else 0
+    flat_doc["C++"] = 1 if 'c++' in requirements else 0
+    flat_doc["JavaScript"] = 1 if 'javascript' in requirements else 0
+    flat_doc["SQL"] = 1 if 'sql' in requirements else 0
+    flat_doc["HTML"] = 1 if 'html' in requirements else 0
+    flat_doc["CSS"] = 1 if 'css' in requirements else 0
+    flat_doc["React"] = 1 if 'react' in requirements else 0
+    flat_doc["Node.js"] = 1 if 'node.js' in requirements else 0
+    flat_doc["Django"] = 1 if 'django' in requirements else 0
+    return flat_doc
+
+# Process documents from the cursor
+transformed_docs = [
+    transform_document(doc) for doc in flattened_docs
+]
+
+# Example output
+pprint(flattened_docs[0])
+
+try:
+    # Insert transformed documents into the target collection
+    target_collection.insert_many(transformed_docs)
+    print(f"Copied and transformed {source_collection.count_documents({})} documents.")
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    # Close the connections
+    source_client.close()
+    target_client.close()

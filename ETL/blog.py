@@ -29,20 +29,17 @@ flattened_docs = [flatten_dict(doc) for doc in cursor]
 
 def transform_document(flat_doc):
     # Example transformation: Add a new field and modify an existing field
-    flat_doc["state"] = (flat_doc.get('address', '').split(','))[-1].strip()
-    skills = [skill.lower() for skill in flat_doc.get('skills', [])]
-    flat_doc["Python"] = 1 if 'python' in skills else 0
-    flat_doc["Java"] = 1 if 'java' in skills else 0
-    flat_doc["C++"] = 1 if 'c++' in skills else 0
-    flat_doc["JavaScript"] = 1 if 'javascript' in skills else 0
-    flat_doc["SQL"] = 1 if 'sql' in skills else 0
-    flat_doc["HTML"] = 1 if 'html' in skills else 0
-    flat_doc["CSS"] = 1 if 'css' in skills else 0
-    flat_doc["React"] = 1 if 'react' in skills else 0
-    flat_doc["Node.js"] = 1 if 'node.js' in skills else 0
-    flat_doc["Django"] = 1 if 'django' in skills else 0
-    if "address.city" in flat_doc:
-        flat_doc["address.city"] = flat_doc["address.city"].upper()  # Transform city name to uppercase
+    tags = flat_doc.get('tags', [])
+    flat_doc["AI"] = 1 if 'AI' in tags else 0
+    flat_doc["Machine Learning"] = 1 if 'Machine Learning' in tags else 0
+    flat_doc["Blockchain"] = 1 if 'Blockchain' in tags else 0
+    flat_doc["Cloud Computing"] = 1 if 'Cloud Computing' in tags else 0
+    flat_doc["DevOps"] = 1 if 'DevOps' in tags else 0
+    flat_doc["Big Data"] = 1 if 'Big Data' in tags else 0
+    flat_doc["Cybersecurity"] = 1 if 'Cybersecurity' in tags else 0
+    flat_doc["IoT"] = 1 if 'IoT' in tags else 0
+    flat_doc["5G"] = 1 if '5G' in tags else 0
+    flat_doc["Quantum Computing"] = 1 if 'Quantum Computing' in tags else 0
     return flat_doc
 
 # Process documents from the cursor

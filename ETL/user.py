@@ -1,31 +1,42 @@
-import random
-import string
-from datetime import datetime, timedelta
+from pprint import pprint
+def flatten_dict(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 from pymongo import MongoClient
-from bson.objectid import ObjectId
-from werkzeug.security import generate_password_hash
-from assets import *
 
 # Connect to MongoDB
-client = MongoClient('mongodb://localhost:27017/')
-db = client['source']
-collection = db['users']
+source_client = MongoClient("mongodb://localhost:27017/")
+target_client = MongoClient("mongodb://localhost:27017/")
 
-# Generate 100 documents based on the schema
-documents = []
-for _ in range(100):
-    my_Date=datetime(2022, 1, 1) + timedelta(days=random.randint(0, (datetime.now() - datetime(2022, 1, 1)).days))
-    document = {
-        'email': random_email(),
-        'passwordHash': random_string(10),
-        'role': random_role(),
-        'firstName': random_name(),
-        'lastName': random_name(),
-        'createdAt': my_Date
-    }
-    documents.append(document)
+# Source and target database and collection details
+source_db = source_client["source"]
+source_collection = source_db["users"]
 
-# Insert documents into the collection
-collection.insert_many(documents)
+target_db = target_client["target"]
+target_collection = target_db["users"]
 
-print("Inserted 100 documents into the users collection.")
+# Fetch documents using the cursor
+cursor = source_collection.find()
+
+# Flatten each document in the cursor
+flattened_docs = [flatten_dict(doc) for doc in cursor]
+
+# Example output
+pprint(flattened_docs[0])
+
+try:
+    # Insert transformed documents into the target collection
+    target_collection.insert_many(flattened_docs)
+    print(f"Copied and transformed {source_collection.count_documents({})} documents.")
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    # Close the connections
+    source_client.close()
+    target_client.close()

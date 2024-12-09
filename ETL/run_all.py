@@ -2,7 +2,7 @@ import os
 import subprocess
 
 # Directory containing the Python files
-directory = os.path.dirname(os.path.abspath("C:/Users/Ramro/OneDrive/Documents/Library/SJSU Semester 1 Material/team project Career Con/codes/data_generator/applicant.py"))
+directory = os.path.dirname(os.path.abspath("C:/Users/Ramro/OneDrive/Documents/Library/SJSU Semester 1 Material/team project Career Con/mongoDB_data_analytics/ETL/run_all.py"))
 
 # List all files in the directory
 files = os.listdir(directory)

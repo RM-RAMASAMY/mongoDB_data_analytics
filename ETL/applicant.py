@@ -41,8 +41,6 @@ def transform_document(flat_doc):
     flat_doc["React"] = 1 if 'react' in skills else 0
     flat_doc["Node.js"] = 1 if 'node.js' in skills else 0
     flat_doc["Django"] = 1 if 'django' in skills else 0
-    if "address.city" in flat_doc:
-        flat_doc["address.city"] = flat_doc["address.city"].upper()  # Transform city name to uppercase
     return flat_doc
 
 # Process documents from the cursor
