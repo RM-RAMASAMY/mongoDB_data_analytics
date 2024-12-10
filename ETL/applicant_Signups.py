@@ -16,16 +16,5 @@ target_collection = target_db["applicant_Signups"]
 # Fetch documents using the cursor
 cursor = source_collection.find()
 
-# Group documents by month
-monthly_summary = defaultdict(list)
 
-for doc in cursor:
-    created_at = doc.get('createdAt')
-    if created_at:
-        month = created_at.strftime("%Y-%m")
-        monthly_summary[month].append(doc)
-
-# Summarize the grouped documents
-summary = {month: len(docs) for month, docs in monthly_summary.items()}
-
-target_collection.bulk_write([UpdateOne({"month": month}, {"$set": {"count": count}}, upsert=True) for month, count in summary.items()])
+target_client.close()
